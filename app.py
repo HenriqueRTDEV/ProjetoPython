@@ -273,6 +273,81 @@ def login():
 
     return render_template("login.html")
 
+@app.route("/recuperar-senha", methods=["GET", "POST"])
+def recuperar_senha():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+
+        if not validar_email(email):
+            flash("Informe um email válido.", "danger")
+            return render_template("recuperar_senha.html")
+
+        conn = None
+        cursor = None
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            # verifica usuário
+            cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
+            usuario = cursor.fetchone()
+
+            # verifica empresa
+            cursor.execute("SELECT id FROM empresas WHERE email = %s", (email,))
+            empresa = cursor.fetchone()
+
+            if not usuario and not empresa:
+                flash("Email não encontrado.", "danger")
+                return render_template("recuperar_senha.html")
+
+            # aqui depois você pode mandar email real
+            session["email_recuperacao"] = email
+            return redirect(url_for("nova_senha"))
+
+        except Error as e:
+            flash(f"Erro no banco: {str(e)}", "danger")
+            return render_template("recuperar_senha.html")
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    return render_template("recuperar_senha.html")
+
+
+@app.route("/nova-senha", methods=["GET", "POST"])
+def nova_senha():
+    if "email_recuperacao" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        nova_senha = request.form.get("senha")
+
+        senha_hash = generate_password_hash(nova_senha)
+        email = session["email_recuperacao"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # atualiza nas duas tabelas
+        cursor.execute("UPDATE usuarios SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+        cursor.execute("UPDATE empresas SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        session.pop("email_recuperacao", None)
+
+        flash("Senha redefinida com sucesso!", "success")
+        return redirect(url_for("login"))
+
+    return render_template("nova_senha.html")
+
 # FEED PRINCIPAL (home do sistema)
 # Só acessa se estiver logado
 @app.route("/feed")
