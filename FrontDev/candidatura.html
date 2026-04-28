@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Candidaturas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container-fluid px-0">
+    <div class="row g-0 min-vh-100">
+
+        <!-- SIDEBAR ESQUERDA -->
+        <div class="col-12 col-lg-3 d-flex align-items-center justify-content-center text-center text-dark"
+             style="background-color:#C4A747;">
+            <div class="p-4 p-lg-5 w-100">
+
+                <h1 class="fw-bold fs-2 mb-2">CANDIDATURAS</h1>
+                <p class="mb-4 opacity-75 small">
+                    Acompanhe o status das suas candidaturas.
+                </p>
+
+                <!-- Resumo rápido -->
+                <div class="row g-2 mb-4">
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-25 rounded p-2">
+                            <p class="fw-bold fs-5 mb-0">2</p>
+                            <p class="small mb-0 opacity-75" style="font-size:0.7rem;">Em análise</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-25 rounded p-2">
+                            <p class="fw-bold fs-5 mb-0">1</p>
+                            <p class="small mb-0 opacity-75" style="font-size:0.7rem;">Aprovadas</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-25 rounded p-2">
+                            <p class="fw-bold fs-5 mb-0">0</p>
+                            <p class="small mb-0 opacity-75" style="font-size:0.7rem;">Reprovadas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a class="btn btn-light btn-lg fw-semibold" href="feed.html">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar para feed
+                    </a>
+                    <a class="btn btn-outline-dark btn-lg fw-semibold" href="#">
+                        <i class="bi bi-briefcase me-2"></i>Ver vagas
+                    </a>
+                    <a class="btn btn-dark btn-lg fw-semibold" href="#">
+                        <i class="bi bi-box-arrow-right me-2"></i>Sair
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="col-12 col-lg-9 bg-white">
+            <div class="container-fluid px-3 px-md-4 py-4">
+
+                <!-- Cabeçalho -->
+                <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                    <h2 class="fw-bold mb-0 fs-4">
+                        <i class="bi bi-journal-check me-2" style="color:#C4A747;"></i>Minhas candidaturas
+                    </h2>
+                    <span class="badge rounded-pill text-dark fw-semibold"
+                          style="background-color:#C4A747;">
+                        3 no total
+                    </span>
+                </div>
+
+                <div class="row g-4">
+
+                    <!-- CARD 1 - Em análise -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-3 p-md-4">
+                                <div class="row g-3 align-items-start">
+
+                                    <div class="col-12 col-md-8">
+                                        <div class="mb-2">
+                                            <span class="badge rounded-pill text-dark" style="background-color:#C4A747;">
+                                                <i class="bi bi-hourglass-split me-1"></i>Em análise
+                                            </span>
+                                        </div>
+                                        <h5 class="fw-bold mb-1">Desenvolvedor Frontend</h5>
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-building me-1"></i>Tech Solutions Ltda
+                                        </p>
+                                        <div class="d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-geo-alt me-1"></i>São Paulo, SP
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-laptop me-1"></i>Híbrido
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-file-earmark-text me-1"></i>CLT
+                                            </span>
+                                        </div>
+                                        <p class="small text-muted fst-italic mb-0">
+                                            <i class="bi bi-clock me-1"></i>Aguardando retorno da empresa.
+                                        </p>
+                                    </div>
+
+                                    <div class="col-12 col-md-4 text-md-end">
+                                        <p class="small text-muted mb-1">
+                                            <i class="bi bi-calendar-check me-1"></i>Candidatado em
+                                        </p>
+                                        <p class="fw-semibold small mb-0">20/04/2025</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0 px-3 px-md-4 pb-3 pt-0">
+                                <hr class="mt-0 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">Progresso:</small>
+                                    <div class="progress flex-grow-1" style="height:6px;">
+                                        <div class="progress-bar" style="width:50%; background-color:#C4A747;"></div>
+                                    </div>
+                                    <small class="text-muted">Em andamento</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 2 - Aprovado -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-3 p-md-4">
+                                <div class="row g-3 align-items-start">
+
+                                    <div class="col-12 col-md-8">
+                                        <div class="mb-2">
+                                            <span class="badge rounded-pill bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Aprovado
+                                            </span>
+                                        </div>
+                                        <h5 class="fw-bold mb-1">Designer UX/UI</h5>
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-building me-1"></i>Creative Agency
+                                        </p>
+                                        <div class="d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-geo-alt me-1"></i>Remoto
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-laptop me-1"></i>Remoto
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-file-earmark-text me-1"></i>PJ
+                                            </span>
+                                        </div>
+                                        <div class="alert alert-light border-start border-4 py-2 mb-0"
+                                             style="border-left-color:#C4A747 !important;">
+                                            <p class="small fw-semibold mb-1">
+                                                <i class="bi bi-chat-left-text me-1" style="color:#C4A747;"></i>
+                                                Feedback da empresa
+                                            </p>
+                                            <p class="small text-muted mb-0">Parabéns! Seu perfil foi aprovado. Entraremos em contato para os próximos passos.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4 text-md-end">
+                                        <p class="small text-muted mb-1">
+                                            <i class="bi bi-calendar-check me-1"></i>Candidatado em
+                                        </p>
+                                        <p class="fw-semibold small mb-0">15/04/2025</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0 px-3 px-md-4 pb-3 pt-0">
+                                <hr class="mt-0 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">Progresso:</small>
+                                    <div class="progress flex-grow-1" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:100%;"></div>
+                                    </div>
+                                    <small class="text-muted">Concluído</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3 - Reprovado -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-3 p-md-4">
+                                <div class="row g-3 align-items-start">
+
+                                    <div class="col-12 col-md-8">
+                                        <div class="mb-2">
+                                            <span class="badge rounded-pill bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Reprovado
+                                            </span>
+                                        </div>
+                                        <h5 class="fw-bold mb-1">Analista de Dados</h5>
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-building me-1"></i>Data Corp
+                                        </p>
+                                        <div class="d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-geo-alt me-1"></i>Rio de Janeiro, RJ
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-laptop me-1"></i>Presencial
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border fw-normal">
+                                                <i class="bi bi-file-earmark-text me-1"></i>CLT
+                                            </span>
+                                        </div>
+                                        <div class="alert alert-light border-start border-4 py-2 mb-0"
+                                             style="border-left-color:#C4A747 !important;">
+                                            <p class="small fw-semibold mb-1">
+                                                <i class="bi bi-chat-left-text me-1" style="color:#C4A747;"></i>
+                                                Feedback da empresa
+                                            </p>
+                                            <p class="small text-muted mb-0">Agradecemos seu interesse, mas seguiremos com outro perfil desta vez.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4 text-md-end">
+                                        <p class="small text-muted mb-1">
+                                            <i class="bi bi-calendar-check me-1"></i>Candidatado em
+                                        </p>
+                                        <p class="fw-semibold small mb-0">10/04/2025</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0 px-3 px-md-4 pb-3 pt-0">
+                                <hr class="mt-0 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">Progresso:</small>
+                                    <div class="progress flex-grow-1" style="height:6px;">
+                                        <div class="progress-bar bg-danger" style="width:100%;"></div>
+                                    </div>
+                                    <small class="text-muted">Encerrado</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
