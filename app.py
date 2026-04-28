@@ -791,5 +791,75 @@ def logout():
     flash("Você saiu da conta com sucesso.", "success")
     return redirect(url_for("login"))
 
+#ROTA TELA CANDIDATURAS USUÁRIOS
+#VISUALIZAR CANDIDATURAS
+
+@app.route("/empresa/candidaturas")
+def visualizar_candidaturas():
+
+    # Verifica se está logado e se é empresa
+    if "usuario_id" not in session or session.get("tipo_conta") != "empresa":
+        flash("Somente empresas podem acessar as candidaturas.", "warning")
+        return redirect(url_for("login"))
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+
+        # dictionary=True permite usar candidatura["nome"]
+        cursor = conn.cursor(dictionary=True)
+
+        empresa_id = session["usuario_id"]
+
+        # Busca todas as candidaturas das vagas dessa empresa
+        cursor.execute(
+            """
+            SELECT
+                candidaturas.id AS candidatura_id,
+                candidaturas.criado_em,
+
+                usuarios.id AS usuario_id,
+                usuarios.nome,
+                usuarios.email,
+                usuarios.telefone,
+                usuarios.idade,
+                usuarios.curriculo_pdf,
+
+                vagas.id AS vaga_id
+
+            FROM candidaturas
+
+            INNER JOIN usuarios
+                ON candidaturas.usuario_id = usuarios.id
+
+            INNER JOIN vagas
+                ON candidaturas.vaga_id = vagas.id
+
+            WHERE vagas.empresa_id = %s
+
+            """,
+            (empresa_id,)
+        )
+
+        candidaturas = cursor.fetchall()
+
+        return render_template(
+            "candidaturas.html",
+            candidaturas=candidaturas
+        )
+
+    except Error as e:
+        flash(f"Erro no banco de dados: {str(e)}", "danger")
+        return redirect(url_for("feed"))
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
 if __name__ == "__main__":
     app.run(debug=True)

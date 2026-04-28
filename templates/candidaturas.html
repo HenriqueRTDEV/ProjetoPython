@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Candidaturas</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background: #f4f4f4;
+            padding: 30px;
+        }
+
+        .card{
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .titulo{
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .vaga{
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .btn{
+            display: inline-block;
+            padding: 10px 15px;
+            background: #0d6efd;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn:hover{
+            background: #0b5ed7;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <h1>Candidaturas recebidas</h1>
+
+    {% if candidaturas %}
+
+        {% for candidatura in candidaturas %}
+
+            <div class="card">
+
+                <div class="titulo">
+                    {{ candidatura.nome }}
+                </div>
+
+                <div class="vaga">
+                    Vaga:
+                    <strong>{{ candidatura.titulo }}</strong>
+                </div>
+
+                <p>
+                    <strong>Email:</strong>
+                    {{ candidatura.email }}
+                </p>
+
+                <p>
+                    <strong>Telefone:</strong>
+                    {{ candidatura.telefone }}
+                </p>
+
+                <p>
+                    <strong>Idade:</strong>
+                    {{ candidatura.idade }}
+                </p>
+
+                <p>
+                    <strong>Data da candidatura:</strong>
+                    {{ candidatura.data_candidatura }}
+                </p>
+
+                {% if candidatura.curriculo_pdf %}
+
+                    <a
+                        class="btn"
+                        href="{{ url_for('static', filename='uploads/' + candidatura.curriculo_pdf) }}"
+                        target="_blank"
+                    >
+                        Ver currículo
+                    </a>
+
+                {% else %}
+
+                    <p>Usuário não enviou currículo.</p>
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>Nenhuma candidatura recebida.</p>
+
+    {% endif %}
+
+</body>
+</html>
