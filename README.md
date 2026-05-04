@@ -51,9 +51,9 @@ http://127.0.0.1:5000
 - `/cadastro-empresa`
 - `/cadastro-usuario`
 - `/editar-vaga`
-- `/nova-vaga`
+- `/nova-vaga`  
 - `/vagas`
-- `/perfil`
+- `/perfil` 
 - `/feed`
 - `/logout`
 

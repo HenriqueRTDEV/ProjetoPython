@@ -273,6 +273,81 @@ def login():
 
     return render_template("login.html")
 
+@app.route("/recuperar-senha", methods=["GET", "POST"])
+def recuperar_senha():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+
+        if not validar_email(email):
+            flash("Informe um email válido.", "danger")
+            return render_template("recuperar_senha.html")
+
+        conn = None
+        cursor = None
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            # verifica usuário
+            cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
+            usuario = cursor.fetchone()
+
+            # verifica empresa
+            cursor.execute("SELECT id FROM empresas WHERE email = %s", (email,))
+            empresa = cursor.fetchone()
+
+            if not usuario and not empresa:
+                flash("Email não encontrado.", "danger")
+                return render_template("recuperar_senha.html")
+
+            # aqui depois você pode mandar email real
+            session["email_recuperacao"] = email
+            return redirect(url_for("nova_senha"))
+
+        except Error as e:
+            flash(f"Erro no banco: {str(e)}", "danger")
+            return render_template("recuperar_senha.html")
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    return render_template("recuperar_senha.html")
+
+
+@app.route("/nova-senha", methods=["GET", "POST"])
+def nova_senha():
+    if "email_recuperacao" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        nova_senha = request.form.get("senha")
+
+        senha_hash = generate_password_hash(nova_senha)
+        email = session["email_recuperacao"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # atualiza nas duas tabelas
+        cursor.execute("UPDATE usuarios SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+        cursor.execute("UPDATE empresas SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        session.pop("email_recuperacao", None)
+
+        flash("Senha redefinida com sucesso!", "success")
+        return redirect(url_for("login"))
+
+    return render_template("nova_senha.html")
+
 # FEED PRINCIPAL (home do sistema)
 # Só acessa se estiver logado
 @app.route("/feed")
@@ -715,6 +790,76 @@ def logout():
     session.clear()
     flash("Você saiu da conta com sucesso.", "success")
     return redirect(url_for("login"))
+
+#ROTA TELA CANDIDATURAS USUÁRIOS
+#VISUALIZAR CANDIDATURAS
+
+@app.route("/empresa/candidaturas")
+def visualizar_candidaturas():
+
+    # Verifica se está logado e se é empresa
+    if "usuario_id" not in session or session.get("tipo_conta") != "empresa":
+        flash("Somente empresas podem acessar as candidaturas.", "warning")
+        return redirect(url_for("login"))
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+
+        # dictionary=True permite usar candidatura["nome"]
+        cursor = conn.cursor(dictionary=True)
+
+        empresa_id = session["usuario_id"]
+
+        # Busca todas as candidaturas das vagas dessa empresa
+        cursor.execute(
+            """
+            SELECT
+                candidaturas.id AS candidatura_id,
+                candidaturas.criado_em,
+
+                usuarios.id AS usuario_id,
+                usuarios.nome,
+                usuarios.email,
+                usuarios.telefone,
+                usuarios.idade,
+                usuarios.curriculo_pdf,
+
+                vagas.id AS vaga_id
+
+            FROM candidaturas
+
+            INNER JOIN usuarios
+                ON candidaturas.usuario_id = usuarios.id
+
+            INNER JOIN vagas
+                ON candidaturas.vaga_id = vagas.id
+
+            WHERE vagas.empresa_id = %s
+
+            """,
+            (empresa_id,)
+        )
+
+        candidaturas = cursor.fetchall()
+
+        return render_template(
+            "candidaturas.html",
+            candidaturas=candidaturas
+        )
+
+    except Error as e:
+        flash(f"Erro no banco de dados: {str(e)}", "danger")
+        return redirect(url_for("feed"))
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vagas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container-fluid min-vh-100">
+    <div class="row min-vh-100">
+
+        <div class="col-lg-4 d-flex align-items-center justify-content-center text-center text-dark"
+             style="background-color:#C4A747;">
+            <div class="p-4">
+                <h1 class="fw-bold mb-3">VAGAS</h1>
+                <p class="mb-4">
+                    Visualize oportunidades disponíveis na plataforma.
+                </p>
+
+                <div class="d-grid gap-3">
+                    <a class="btn btn-light btn-lg fw-semibold" href="{{ url_for('feed') }}">
+                        Voltar para feed
+                    </a>
+
+                    {% if tipo == 'empresa' %}
+                    <a class="btn btn-outline-dark btn-lg fw-semibold" href="{{ url_for('nova_vaga') }}">
+                        Nova vaga
+                    </a>
+                    {% endif %}
+
+                    <a class="btn btn-dark btn-lg fw-semibold" href="{{ url_for('logout') }}">
+                        Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 bg-white py-4">
+            <div class="container" style="max-width:900px;">
+                <h2 class="mb-4">Lista de vagas</h2>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}" role="alert">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                {% if vagas %}
+                    {% for vaga in vagas %}
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <div>
+                                    <h4 class="mb-1">{{ vaga.titulo }}</h4>
+                                    <p class="mb-1 text-muted"><strong>Empresa:</strong> {{ vaga.nome_empresa }}</p>
+                                    <p class="mb-1 text-muted">
+                                        <strong>Local:</strong> {{ vaga.localizacao }}
+                                        | <strong>Contrato:</strong> {{ vaga.tipo_contrato }}
+                                        | <strong>Modalidade:</strong> {{ vaga.modalidade }}
+                                    </p>
+                                    {% if vaga.salario %}
+                                    <p class="mb-2 text-muted"><strong>Salário:</strong> {{ vaga.salario }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <p><strong>Descrição:</strong><br>{{ vaga.descricao }}</p>
+                            <p><strong>Requisitos:</strong><br>{{ vaga.requisitos }}</p>
+
+                            <div class="mt-3 d-flex gap-2 flex-wrap">
+                                {% if tipo == 'usuario' %}
+                                    {% if vaga.ja_candidatado %}
+                                        <button class="btn btn-success" disabled>Você já se candidatou</button>
+                                    {% else %}
+                                        <form method="POST" action="{{ url_for('candidatar_vaga', vaga_id=vaga.id) }}">
+                                            <button type="submit" class="btn text-dark fw-semibold"
+                                                    style="background-color:#C4A747;">
+                                                Candidatar-se
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if tipo == 'empresa' and vaga.minha_vaga %}
+                                    <a href="{{ url_for('editar_vaga', vaga_id=vaga.id) }}"
+                                       class="btn text-dark fw-semibold"
+                                       style="background-color:#C4A747;">
+                                        Editar minha vaga
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-secondary">
+                        Nenhuma vaga cadastrada no momento.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
