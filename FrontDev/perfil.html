@@ -11,6 +11,7 @@
 <div class="container-fluid min-vh-100">
     <div class="row min-vh-100">
 
+        <!-- LADO ESQUERDO -->
         <div class="col-lg-5 d-flex align-items-center justify-content-center text-center text-dark" style="background-color:#C4A747;">
             <div class="p-4">
                 <h1 class="fw-bold mb-3">MEU PERFIL</h1>
@@ -22,8 +23,10 @@
             </div>
         </div>
 
+        <!-- LADO DIREITO -->
         <div class="col-lg-7 d-flex align-items-center justify-content-center bg-white py-4">
             <div class="w-100 shadow p-4 rounded" style="max-width:650px;">
+
                 <div class="text-center mb-4">
                     <img src="{{ url_for('static', filename='images/canva-logo.png') }}" style="max-height:80px;" onerror="this.style.display='none'">
                 </div>
@@ -38,21 +41,22 @@
                   {% endif %}
                 {% endwith %}
 
-                <form method="POST" action="{{ url_for('perfil') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ url_for('perfil') }}">
+
+                    <!-- DADOS FIXOS -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Nome</label>
                             <input type="text" class="form-control bg-light" value="{{ usuario.nome }}" readonly>
-                            <div class="form-text">Campo não editável.</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">CPF</label>
                             <input type="text" class="form-control bg-light" value="{{ usuario.cpf }}" readonly>
-                            <div class="form-text">Campo não editável.</div>
                         </div>
                     </div>
 
+                    <!-- DADOS EDITÁVEIS -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Telefone</label>
@@ -68,27 +72,32 @@
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="email" class="form-control bg-light" value="{{ usuario.email }}" readonly>
-                        <div class="form-text">Campo não editável.</div>
+                    </div>
+
+                    <!-- NOVOS CAMPOS -->
+
+                    <div class="mb-3">
+                        <label class="form-label">Experiência Profissional</label>
+                        <textarea class="form-control" name="experiencia" rows="3" placeholder="Descreva suas experiências">{{ usuario.experiencia or '' }}</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Anexar PDF</label>
-                        <input type="file" class="form-control" name="curriculo_pdf" accept=".pdf,application/pdf">
-                        <div class="form-text">Envie um PDF de até 5MB.</div>
+                        <label class="form-label">Formação Acadêmica</label>
+                        <textarea class="form-control" name="formacao" rows="3" placeholder="Ex: Ensino Médio, Graduação...">{{ usuario.formacao or '' }}</textarea>
                     </div>
 
-                    {% if usuario.curriculo_pdf %}
-                    <div class="mb-4">
-                        <span class="fw-semibold">PDF atual:</span>
-                        <a href="{{ url_for('download_arquivo', filename=usuario.curriculo_pdf) }}" target="_blank">Visualizar arquivo enviado</a>
+                    <div class="mb-3">
+                        <label class="form-label">Competências</label>
+                        <textarea class="form-control" name="competencias" rows="3" placeholder="Ex: Comunicação, Design, Marketing...">{{ usuario.competencias or '' }}</textarea>
                     </div>
-                    {% endif %}
 
+                    <!-- BOTÃO -->
                     <div class="d-grid mt-3">
                         <button type="submit" class="btn btn-lg fw-semibold text-dark" style="background-color:#C4A747;">
                             Salvar perfil
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -108,5 +117,6 @@ document.querySelector('input[name="telefone"]').addEventListener("input", funct
     e.target.value = formatTelefone(e.target.value);
 });
 </script>
+
 </body>
 </html>
