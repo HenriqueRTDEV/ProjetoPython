@@ -383,7 +383,10 @@ def perfil():
         if request.method == "POST":
             telefone = request.form.get("telefone", "").strip()
             idade = request.form.get("idade", "").strip()
-            curriculo = request.files.get("curriculo_pdf")
+
+            experiencia_profissional = request.form.get("experiencia_profissional", "").strip()
+            formacao_academica = request.form.get("formacao_academica", "").strip()
+            competencias = request.form.get("competencias", "").strip()
 
             if not validar_telefone(telefone):
                 flash("Telefone inválido.", "danger")
@@ -394,53 +397,53 @@ def perfil():
                 return redirect(url_for("perfil"))
 
             idade_int = int(idade)
+
             if idade_int < 14 or idade_int > 120:
                 flash("Informe uma idade válida.", "danger")
                 return redirect(url_for("perfil"))
 
-            pdf_nome_salvo = None
-
-            if curriculo and curriculo.filename:
-                if not allowed_file(curriculo.filename):
-                    flash("Envie somente arquivo PDF.", "danger")
-                    return redirect(url_for("perfil"))
-
-                nome_seguro = secure_filename(curriculo.filename)
-                pdf_nome_salvo = f"{uuid.uuid4().hex}_{nome_seguro}"
-                caminho_arquivo = os.path.join(app.config["UPLOAD_FOLDER"], pdf_nome_salvo)
-                curriculo.save(caminho_arquivo)
-
-            if pdf_nome_salvo:
-                cursor.execute(
-                    """
-                    UPDATE usuarios
-                    SET telefone = %s, idade = %s, curriculo_pdf = %s
-                    WHERE id = %s
-                    """,
-                    (telefone, idade_int, pdf_nome_salvo, usuario_id)
+            cursor.execute(
+                """
+                UPDATE usuarios
+                SET telefone = %s,
+                    idade = %s,
+                    experiencia_profissional = %s,
+                    formacao_academica = %s,
+                    competencias = %s
+                WHERE id = %s
+                """,
+                (
+                    telefone,
+                    idade_int,
+                    experiencia_profissional,
+                    formacao_academica,
+                    competencias,
+                    usuario_id
                 )
-            else:
-                cursor.execute(
-                    """
-                    UPDATE usuarios
-                    SET telefone = %s, idade = %s
-                    WHERE id = %s
-                    """,
-                    (telefone, idade_int, usuario_id)
-                )
+            )
 
             conn.commit()
+
             flash("Perfil atualizado com sucesso!", "success")
             return redirect(url_for("perfil"))
 
         cursor.execute(
             """
-            SELECT id, nome, cpf, telefone, idade, email, curriculo_pdf
+            SELECT id,
+                   nome,
+                   cpf,
+                   telefone,
+                   idade,
+                   email,
+                   experiencia_profissional,
+                   formacao_academica,
+                   competencias
             FROM usuarios
             WHERE id = %s
             """,
             (usuario_id,)
         )
+
         usuario = cursor.fetchone()
 
         if not usuario:
@@ -456,6 +459,7 @@ def perfil():
     finally:
         if cursor:
             cursor.close()
+
         if conn:
             conn.close()
 
