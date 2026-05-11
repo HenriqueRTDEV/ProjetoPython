@@ -64,74 +64,78 @@
                 {% if candidaturas %}
 
                     {% for c in candidaturas %}
+<div class="col-12">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-3 p-md-4">
+            
+            <!-- IDENTIFICADOR DA VAGA (NOVO) -->
+            <div class="mb-3">
+                <span class="badge text-dark" style="background-color: #e9ecef; border-left: 4px solid #C4A747;">
+                    Vaga: <span class="fw-bold">{{ c.vaga_titulo }}</span>
+                </span>
+                <small class="text-muted ms-2">
+                    <i class="bi bi-geo-alt"></i> {{ c.vaga_localizacao }} | 
+                    <i class="bi bi-briefcase"></i> {{ c.vaga_tipo_contrato }}
+                </small>
+            </div>
 
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body p-3 p-md-4">
+            <div class="row g-3 align-items-start">
 
-                                <div class="row g-3 align-items-start">
+                <!-- LADO ESQUERDO: INFO DO CANDIDATO -->
+                <div class="col-12 col-md-8">
+                    <!-- NOME -->
+                    <h5 class="fw-bold mb-1">
+                        <i class="bi bi-person-circle me-1"></i>{{ c.nome }}
+                    </h5>
 
-                                    <!-- LADO ESQUERDO -->
-                                    <div class="col-12 col-md-8">
+                    <!-- INFO -->
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-envelope me-1"></i>{{ c.email }}
+                    </p>
 
-                                        <!-- NOME -->
-                                        <h5 class="fw-bold mb-1">
-                                            <i class="bi bi-person-circle me-1"></i>{{ c.nome }}
-                                        </h5>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-telephone me-1"></i>{{ c.telefone }}
+                    </p>
 
-                                        <!-- INFO -->
-                                        <p class="text-muted small mb-2">
-                                            <i class="bi bi-envelope me-1"></i>{{ c.email }}
-                                        </p>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-calendar me-1"></i>Idade: {{ c.idade }}
+                    </p>
 
-                                        <p class="text-muted small mb-2">
-                                            <i class="bi bi-telephone me-1"></i>{{ c.telefone }}
-                                        </p>
+                    <!-- CURRÍCULO -->
+                    {% if c.curriculo_pdf %}
+                        <a class="btn btn-sm fw-semibold text-dark"
+                           style="background-color:#C4A747;"
+                           href="{{ url_for('static', filename='uploads/' + c.curriculo_pdf) }}"
+                           target="_blank">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Ver currículo
+                        </a>
+                    {% else %}
+                        <span class="text-muted small">Sem currículo enviado</span>
+                    {% endif %}
+                </div>
 
-                                        <p class="text-muted small mb-3">
-                                            <i class="bi bi-calendar me-1"></i>Idade: {{ c.idade }}
-                                        </p>
+                <!-- LADO DIREITO: DATA E AÇÕES -->
+                <div class="col-12 col-md-4 text-md-end">
+                    <p class="small text-muted mb-1">
+                        <i class="bi bi-calendar-check me-1"></i>Candidatura em
+                    </p>
 
-                                        <!-- CURRÍCULO -->
-                                        {% if c.curriculo_pdf %}
-                                            <a class="btn btn-sm fw-semibold text-dark"
-                                               style="background-color:#C4A747;"
-                                               href="{{ url_for('static', filename='uploads/' + c.curriculo_pdf) }}"
-                                               target="_blank">
-                                                <i class="bi bi-file-earmark-pdf me-1"></i>Ver currículo
-                                            </a>
-                                        {% else %}
-                                            <span class="text-muted small">Sem currículo enviado</span>
-                                        {% endif %}
+                    <p class="fw-semibold small mb-2">
+                        {{ c.criado_em.strftime('%d/%m/%Y') if c.criado_em else '' }}
+                    </p>
 
-                                    </div>
+                    <!-- BOTÃO DETALHAR VAGA (Ajustado para levar à vaga específica se você tiver essa rota) -->
+                    <a href="{{ url_for('listar_vagas') }}"
+                       class="btn btn-outline-dark btn-sm fw-semibold">
+                        <i class="bi bi-eye me-1"></i>Gerenciar Vagas
+                    </a>
+                </div>
 
-                                    <!-- LADO DIREITO -->
-                                    <div class="col-12 col-md-4 text-md-end">
-
-                                        <p class="small text-muted mb-1">
-                                            <i class="bi bi-calendar-check me-1"></i>Candidatura em
-                                        </p>
-
-                                        <p class="fw-semibold small mb-2">
-                                            {{ c.criado_em.strftime('%d/%m/%Y') if c.criado_em else '' }}
-                                        </p>
-
-                                        <!-- BOTÃO DETALHAR -->
-                                        <a href="{{ url_for('listar_vagas') }}"
-                                           class="btn btn-outline-dark btn-sm fw-semibold">
-                                            <i class="bi bi-eye me-1"></i>Ver vaga
-                                        </a>
-
-                                    </div>
-
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
                 {% else %}
 
