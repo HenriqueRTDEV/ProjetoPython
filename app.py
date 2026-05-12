@@ -6,9 +6,20 @@ from mysql.connector import Error
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
 app.secret_key = "troque-esta-chave-secreta"
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'senactds2026@gmail.com'      # Gmail que vai enviar
+app.config['MAIL_PASSWORD'] = 'inwedjcfgmmhlgtn'  # Senha de app do Gmail
+app.config['MAIL_DEFAULT_SENDER'] = 'senactds2026@gmail.com'
+
+mail = Mail(app)
+s = URLSafeTimedSerializer(app.secret_key)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
@@ -284,16 +295,13 @@ def recuperar_senha():
 
         conn = None
         cursor = None
-
         try:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
 
-            # verifica usuário
             cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
             usuario = cursor.fetchone()
 
-            # verifica empresa
             cursor.execute("SELECT id FROM empresas WHERE email = %s", (email,))
             empresa = cursor.fetchone()
 
@@ -301,12 +309,34 @@ def recuperar_senha():
                 flash("Email não encontrado.", "danger")
                 return render_template("recuperar_senha.html")
 
-            # aqui depois você pode mandar email real
-            session["email_recuperacao"] = email
-            return redirect(url_for("nova_senha"))
+            # Gera token seguro com validade de 1 hora
+            token = s.dumps(email, salt='recuperar-senha')
+            link = url_for('nova_senha', token=token, _external=True)
+
+            # Envia o email
+            msg = Message(
+                subject='Redefinição de Senha - Projeto SENAC',
+                recipients=[email]
+            )
+            msg.body = f'''Olá!
+
+Recebemos uma solicitação para redefinir a senha da sua conta.
+
+Clique no link abaixo para redefinir sua senha (válido por 1 hora):
+{link}
+
+Se não foi você quem solicitou, ignore este email.
+
+Atenciosamente,
+Equipe Projeto SENAC
+'''
+            mail.send(msg)
+
+            flash("Email de recuperação enviado! Verifique sua caixa de entrada.", "success")
+            return redirect(url_for("login"))
 
         except Error as e:
-            flash(f"Erro no banco: {str(e)}", "danger")
+            flash(f"Erro no banco de dados: {str(e)}", "danger")
             return render_template("recuperar_senha.html")
 
         finally:
@@ -318,35 +348,48 @@ def recuperar_senha():
     return render_template("recuperar_senha.html")
 
 
-@app.route("/nova-senha", methods=["GET", "POST"])
-def nova_senha():
-    if "email_recuperacao" not in session:
-        return redirect(url_for("login"))
+@app.route("/nova-senha/<token>", methods=["GET", "POST"])
+def nova_senha(token):
+    # Valida o token (expira em 1 hora)
+    try:
+        email = s.loads(token, salt='recuperar-senha', max_age=3600)
+    except Exception:
+        flash("Link inválido ou expirado. Solicite um novo.", "danger")
+        return redirect(url_for("recuperar_senha"))
 
     if request.method == "POST":
-        nova_senha = request.form.get("senha")
+        nova_senha = request.form.get("senha", "")
+
+        if len(nova_senha) < 6:
+            flash("A senha deve ter pelo menos 6 caracteres.", "danger")
+            return render_template("nova_senha.html", token=token)
 
         senha_hash = generate_password_hash(nova_senha)
-        email = session["email_recuperacao"]
 
-        conn = get_connection()
-        cursor = conn.cursor()
+        conn = None
+        cursor = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
 
-        # atualiza nas duas tabelas
-        cursor.execute("UPDATE usuarios SET senha_hash=%s WHERE email=%s", (senha_hash, email))
-        cursor.execute("UPDATE empresas SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+            cursor.execute("UPDATE usuarios SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+            cursor.execute("UPDATE empresas SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+            conn.commit()
 
-        conn.commit()
+            flash("Senha redefinida com sucesso!", "success")
+            return redirect(url_for("login"))
 
-        cursor.close()
-        conn.close()
+        except Error as e:
+            flash(f"Erro no banco de dados: {str(e)}", "danger")
+            return render_template("nova_senha.html", token=token)
 
-        session.pop("email_recuperacao", None)
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
-        flash("Senha redefinida com sucesso!", "success")
-        return redirect(url_for("login"))
-
-    return render_template("nova_senha.html")
+    return render_template("nova_senha.html", token=token)
 
 # FEED PRINCIPAL (home do sistema)
 # Só acessa se estiver logado
@@ -383,7 +426,10 @@ def perfil():
         if request.method == "POST":
             telefone = request.form.get("telefone", "").strip()
             idade = request.form.get("idade", "").strip()
-            curriculo = request.files.get("curriculo_pdf")
+
+            experiencia_profissional = request.form.get("experiencia_profissional", "").strip()
+            formacao_academica = request.form.get("formacao_academica", "").strip()
+            competencias = request.form.get("competencias", "").strip()
 
             if not validar_telefone(telefone):
                 flash("Telefone inválido.", "danger")
@@ -394,53 +440,53 @@ def perfil():
                 return redirect(url_for("perfil"))
 
             idade_int = int(idade)
+
             if idade_int < 14 or idade_int > 120:
                 flash("Informe uma idade válida.", "danger")
                 return redirect(url_for("perfil"))
 
-            pdf_nome_salvo = None
-
-            if curriculo and curriculo.filename:
-                if not allowed_file(curriculo.filename):
-                    flash("Envie somente arquivo PDF.", "danger")
-                    return redirect(url_for("perfil"))
-
-                nome_seguro = secure_filename(curriculo.filename)
-                pdf_nome_salvo = f"{uuid.uuid4().hex}_{nome_seguro}"
-                caminho_arquivo = os.path.join(app.config["UPLOAD_FOLDER"], pdf_nome_salvo)
-                curriculo.save(caminho_arquivo)
-
-            if pdf_nome_salvo:
-                cursor.execute(
-                    """
-                    UPDATE usuarios
-                    SET telefone = %s, idade = %s, curriculo_pdf = %s
-                    WHERE id = %s
-                    """,
-                    (telefone, idade_int, pdf_nome_salvo, usuario_id)
+            cursor.execute(
+                """
+                UPDATE usuarios
+                SET telefone = %s,
+                    idade = %s,
+                    experiencia_profissional = %s,
+                    formacao_academica = %s,
+                    competencias = %s
+                WHERE id = %s
+                """,
+                (
+                    telefone,
+                    idade_int,
+                    experiencia_profissional,
+                    formacao_academica,
+                    competencias,
+                    usuario_id
                 )
-            else:
-                cursor.execute(
-                    """
-                    UPDATE usuarios
-                    SET telefone = %s, idade = %s
-                    WHERE id = %s
-                    """,
-                    (telefone, idade_int, usuario_id)
-                )
+            )
 
             conn.commit()
+
             flash("Perfil atualizado com sucesso!", "success")
             return redirect(url_for("perfil"))
 
         cursor.execute(
             """
-            SELECT id, nome, cpf, telefone, idade, email, curriculo_pdf
+            SELECT id,
+                   nome,
+                   cpf,
+                   telefone,
+                   idade,
+                   email,
+                   experiencia_profissional,
+                   formacao_academica,
+                   competencias
             FROM usuarios
             WHERE id = %s
             """,
             (usuario_id,)
         )
+
         usuario = cursor.fetchone()
 
         if not usuario:
@@ -456,6 +502,7 @@ def perfil():
     finally:
         if cursor:
             cursor.close()
+
         if conn:
             conn.close()
 

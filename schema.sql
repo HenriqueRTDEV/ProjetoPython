@@ -52,3 +52,8 @@ CREATE TABLE IF NOT EXISTS candidaturas (
 
 select* from usuarios;
 select* from empresas;
+
+ALTER TABLE usuarios
+ADD COLUMN experiencia_profissional TEXT,
+ADD COLUMN formacao_academica TEXT,
+ADD COLUMN competencias TEXT;
