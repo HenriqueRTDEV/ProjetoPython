@@ -4,117 +4,293 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vagas</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            overflow-x: hidden;
+        }
+
+        .btn-gold {
+            background-color: #C4A747;
+            color: #212529;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-gold:hover {
+            background-color: #b79a3f;
+            color: #212529;
+        }
+    </style>
 </head>
+
 <body class="bg-light">
 
 <div class="container-fluid min-vh-100">
     <div class="row min-vh-100">
 
+        <!-- MENU LATERAL -->
         <div class="col-lg-4 d-flex align-items-center justify-content-center text-center text-dark"
              style="background-color:#C4A747;">
+
             <div class="p-4">
-                <h1 class="fw-bold mb-3">VAGAS</h1>
+
+                <h1 class="fw-bold mb-3">
+                    VAGAS
+                </h1>
+
                 <p class="mb-4">
                     Visualize oportunidades disponíveis na plataforma.
                 </p>
 
                 <div class="d-grid gap-3">
-                    <a class="btn btn-light btn-lg fw-semibold" href="{{ url_for('feed') }}">
+
+                    <!-- VOLTAR -->
+                    <a class="btn btn-light btn-lg fw-semibold"
+                       href="{{ url_for('feed') }}">
                         Voltar para feed
                     </a>
 
+                    <!-- NOVA VAGA -->
                     {% if tipo == 'empresa' %}
-                    <a class="btn btn-outline-dark btn-lg fw-semibold" href="{{ url_for('nova_vaga') }}">
+                    <a class="btn btn-outline-dark btn-lg fw-semibold"
+                       href="{{ url_for('nova_vaga') }}">
                         Nova vaga
                     </a>
 
-                    <!-- ✅ BOTÃO CANDIDATURAS -->
-                    <a class="btn btn-outline-dark btn-lg fw-semibold" href="{{ url_for('visualizar_candidaturas') }}">
+                    <!-- CANDIDATURAS -->
+                    <a class="btn btn-outline-dark btn-lg fw-semibold"
+                       href="{{ url_for('visualizar_candidaturas') }}">
                         Candidaturas
                     </a>
                     {% endif %}
 
-                    <a class="btn btn-dark btn-lg fw-semibold" href="{{ url_for('logout') }}">
+                    <!-- SAIR -->
+                    <a class="btn btn-dark btn-lg fw-semibold"
+                       href="{{ url_for('logout') }}">
                         Sair
                     </a>
+
                 </div>
+
             </div>
+
         </div>
 
+        <!-- CONTEÚDO -->
         <div class="col-lg-8 bg-white py-4">
-            <div class="container" style="max-width:900px;">
-                <h2 class="mb-4">Lista de vagas</h2>
 
+            <div class="container" style="max-width: 900px;">
+
+                <h2 class="mb-4">
+                    Lista de vagas
+                </h2>
+
+                <!-- ALERTAS -->
                 {% with messages = get_flashed_messages(with_categories=true) %}
-                  {% if messages %}
-                    {% for category, message in messages %}
-                      <div class="alert alert-{{ category }}" role="alert">
-                        {{ message }}
-                      </div>
-                    {% endfor %}
-                  {% endif %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 {% endwith %}
 
+                <!-- LISTA DE VAGAS -->
                 {% if vagas %}
+
                     {% for vaga in vagas %}
+
                     <div class="card shadow-sm border-0 mb-4">
+
                         <div class="card-body">
+
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+
                                 <div>
-                                    <h4 class="mb-1">{{ vaga.titulo }}</h4>
-                                    <p class="mb-1 text-muted"><strong>Empresa:</strong> {{ vaga.nome_empresa }}</p>
+
+                                    <h4 class="mb-1">
+                                        {{ vaga.titulo }}
+                                    </h4>
+
                                     <p class="mb-1 text-muted">
-                                        <strong>Local:</strong> {{ vaga.localizacao }}
-                                        | <strong>Contrato:</strong> {{ vaga.tipo_contrato }}
-                                        | <strong>Modalidade:</strong> {{ vaga.modalidade }}
+                                        <strong>Empresa:</strong> {{ vaga.nome_empresa }}
                                     </p>
+
+                                    <p class="mb-1 text-muted">
+
+                                        <strong>Local:</strong> {{ vaga.localizacao }}
+
+                                        |
+
+                                        <strong>Contrato:</strong> {{ vaga.tipo_contrato }}
+
+                                        |
+
+                                        <strong>Modalidade:</strong> {{ vaga.modalidade }}
+
+                                    </p>
+
                                     {% if vaga.salario %}
-                                    <p class="mb-2 text-muted"><strong>Salário:</strong> {{ vaga.salario }}</p>
+                                    <p class="mb-2 text-muted">
+                                        <strong>Salário:</strong> {{ vaga.salario }}
+                                    </p>
                                     {% endif %}
+
                                 </div>
+
                             </div>
 
                             <hr>
 
-                            <p><strong>Descrição:</strong><br>{{ vaga.descricao }}</p>
-                            <p><strong>Requisitos:</strong><br>{{ vaga.requisitos }}</p>
+                            <p>
+                                <strong>Descrição:</strong><br>
+                                {{ vaga.descricao }}
+                            </p>
+
+                            <p>
+                                <strong>Requisitos:</strong><br>
+                                {{ vaga.requisitos }}
+                            </p>
 
                             <div class="mt-3 d-flex gap-2 flex-wrap">
+
+                                <!-- USUÁRIO -->
                                 {% if tipo == 'usuario' %}
+
                                     {% if vaga.ja_candidatado %}
-                                        <button class="btn btn-success" disabled>Você já se candidatou</button>
+
+                                        <button class="btn btn-success" disabled>
+                                            Você já se candidatou
+                                        </button>
+
                                     {% else %}
-                                        <form method="POST" action="{{ url_for('candidatar_vaga', vaga_id=vaga.id) }}">
-                                            <button type="submit" class="btn text-dark fw-semibold"
-                                                    style="background-color:#C4A747;">
-                                                Candidatar-se
-                                            </button>
-                                        </form>
+
+                                        <!-- BOTÃO MODAL -->
+                                        <button type="button"
+                                                class="btn btn-gold"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalCandidatura{{ vaga.id }}">
+
+                                            Candidatar-se
+
+                                        </button>
+
                                     {% endif %}
+
                                 {% endif %}
 
+                                <!-- EMPRESA -->
                                 {% if tipo == 'empresa' and vaga.minha_vaga %}
-                                    <a href="{{ url_for('editar_vaga', vaga_id=vaga.id) }}"
-                                       class="btn text-dark fw-semibold"
-                                       style="background-color:#C4A747;">
-                                        Editar minha vaga
-                                    </a>
+
+                                <a href="{{ url_for('editar_vaga', vaga_id=vaga.id) }}"
+                                   class="btn btn-gold">
+
+                                    Editar minha vaga
+
+                                </a>
+
                                 {% endif %}
+
                             </div>
+
                         </div>
+
                     </div>
+
+                    <!-- MODAL -->
+                    {% if tipo == 'usuario' and not vaga.ja_candidatado %}
+
+                    <div class="modal fade"
+                         id="modalCandidatura{{ vaga.id }}"
+                         tabindex="-1"
+                         aria-labelledby="modalLabel{{ vaga.id }}"
+                         aria-hidden="true">
+
+                        <div class="modal-dialog modal-dialog-centered">
+
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+
+                                    <h5 class="modal-title"
+                                        id="modalLabel{{ vaga.id }}">
+
+                                        Confirmar candidatura
+
+                                    </h5>
+
+                                    <button type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Fechar">
+                                    </button>
+
+                                </div>
+
+                                <div class="modal-body">
+
+                                    Tem certeza que deseja se candidatar para a vaga
+
+                                    <strong>{{ vaga.titulo }}</strong>?
+
+                                </div>
+
+                                <div class="modal-footer">
+
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal">
+
+                                        Cancelar
+
+                                    </button>
+
+                                    <!-- FORM -->
+                                    <form method="POST"
+                                          action="{{ url_for('candidatar_vaga', vaga_id=vaga.id) }}">
+
+                                        <button type="submit"
+                                                class="btn btn-gold">
+
+                                            Sim, candidatar-me
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% endif %}
+
                     {% endfor %}
+
                 {% else %}
-                    <div class="alert alert-secondary">
-                        Nenhuma vaga cadastrada no momento.
-                    </div>
+
+                <!-- SEM VAGAS -->
+                <div class="alert alert-secondary">
+                    Nenhuma vaga cadastrada no momento.
+                </div>
+
                 {% endif %}
+
             </div>
+
         </div>
 
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
