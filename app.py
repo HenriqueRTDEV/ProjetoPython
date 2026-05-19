@@ -907,6 +907,109 @@ def visualizar_candidaturas():
 
         if conn:
             conn.close()
+            
+            
+            # PERFIL DA EMPRESA
+@app.route("/perfil_empresa", methods=["GET", "POST"])
+def perfil_empresa():
+
+    # Verifica se está logado e se é empresa
+    if "usuario_id" not in session or session.get("tipo_conta") != "empresa":
+        flash("Somente empresas podem acessar esta página.", "warning")
+        return redirect(url_for("login"))
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        empresa_id = session["usuario_id"]
+
+        # SALVAR ALTERAÇÕES
+        if request.method == "POST":
+
+            nome_empresa = request.form.get("nome_empresa", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            telefone = request.form.get("telefone", "").strip()
+            cnpj = request.form.get("cnpj", "").strip()
+
+            # VALIDAÇÕES
+            if not nome_empresa:
+                flash("Informe o nome da empresa.", "danger")
+                return redirect(url_for("perfil_empresa"))
+
+            if not validar_email(email):
+                flash("Email inválido.", "danger")
+                return redirect(url_for("perfil_empresa"))
+
+            if not validar_telefone(telefone):
+                flash("Telefone inválido.", "danger")
+                return redirect(url_for("perfil_empresa"))
+
+            if not validar_cnpj(cnpj):
+                flash("CNPJ inválido.", "danger")
+                return redirect(url_for("perfil_empresa"))
+
+            # UPDATE
+            cursor.execute("""
+                UPDATE empresas
+                SET
+                    nome_empresa = %s,
+                    email = %s,
+                    telefone = %s,
+                    numero_registro = %s
+                WHERE id = %s
+            """, (
+                nome_empresa,
+                email,
+                telefone,
+                cnpj,
+                empresa_id
+            ))
+
+            conn.commit()
+
+            flash("Dados da empresa atualizados com sucesso!", "success")
+
+            return redirect(url_for("perfil_empresa"))
+
+        # CARREGAR DADOS DA EMPRESA
+        cursor.execute("""
+            SELECT
+                id,
+                nome_empresa,
+                email,
+                telefone,
+                numero_registro
+            FROM empresas
+            WHERE id = %s
+        """, (empresa_id,))
+
+        empresa = cursor.fetchone()
+
+        if not empresa:
+            flash("Empresa não encontrada.", "danger")
+            return redirect(url_for("logout"))
+
+        return render_template(
+            "perfil_empresa.html",
+            empresa=empresa
+        )
+
+    except Error as e:
+        flash(f"Erro no banco de dados: {str(e)}", "danger")
+        return redirect(url_for("feed"))
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+            
+            
 
 if __name__ == "__main__":
     app.run(debug=True)

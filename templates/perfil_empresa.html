@@ -20,7 +20,9 @@
 
             <div class="p-4">
 
-                <h1 class="fw-bold mb-3">PERFIL DA EMPRESA</h1>
+                <h1 class="fw-bold mb-3">
+                    PERFIL DA EMPRESA
+                </h1>
 
                 <p class="mb-4">
                     Complete as informações da empresa para fortalecer sua presença na plataforma.
@@ -28,42 +30,64 @@
 
                 <div class="d-grid gap-3">
 
-                    <a class="btn btn-light btn-lg fw-semibold" href="#">
+                    <!-- VOLTAR -->
+                    <a class="btn btn-light btn-lg fw-semibold"
+                       href="{{ url_for('feed') }}">
+
                         Voltar para feed
+
                     </a>
 
-                    <a class="btn btn-outline-dark btn-lg fw-semibold" href="#">
+                    <!-- SAIR -->
+                    <a class="btn btn-outline-dark btn-lg fw-semibold"
+                       href="{{ url_for('logout') }}">
+
                         Sair
+
                     </a>
 
                 </div>
 
             </div>
+
         </div>
 
         <!-- LADO DIREITO -->
         <div class="col-lg-7 d-flex align-items-center justify-content-center bg-white py-4">
 
-            <div class="w-100 shadow p-4 rounded" style="max-width:650px;">
+            <div class="w-100 shadow p-4 rounded"
+                 style="max-width:650px;">
 
                 <!-- LOGO -->
                 <div class="text-center mb-4">
 
-                    <img src="images/7d44d014-69c1-463d-894a-80f197826c7d.png"
+                    <img src="{{ url_for('static', filename='images/7d44d014-69c1-463d-894a-80f197826c7d.png') }}"
                          alt="Logo"
                          style="max-height:80px;">
 
                 </div>
 
-                <h2 class="text-center mb-4">Cadastro da Empresa</h2>
+                <h2 class="text-center mb-4">
+                    Cadastro da Empresa
+                </h2>
 
-                <!-- ALERTA -->
-                <div class="alert alert-success" role="alert">
-                    Dados da empresa atualizados com sucesso!
-                </div>
+                <!-- ALERTAS -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+
+                        {% for category, message in messages %}
+
+                            <div class="alert alert-{{ category }}" role="alert">
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+                {% endwith %}
 
                 <!-- FORMULÁRIO -->
-                <form>
+                <form method="POST">
 
                     <!-- NOME DA EMPRESA -->
                     <div class="mb-3">
@@ -74,6 +98,8 @@
 
                         <input type="text"
                                class="form-control"
+                               name="nome_empresa"
+                               value="{{ empresa.nome_empresa }}"
                                placeholder="Digite o nome da empresa"
                                required>
 
@@ -88,6 +114,8 @@
 
                         <input type="email"
                                class="form-control"
+                               name="email"
+                               value="{{ empresa.email }}"
                                placeholder="empresa@email.com"
                                required>
 
@@ -102,6 +130,8 @@
 
                         <input type="text"
                                class="form-control"
+                               name="telefone"
+                               value="{{ empresa.telefone }}"
                                placeholder="(00) 00000-0000"
                                maxlength="15"
                                required>
@@ -117,6 +147,8 @@
 
                         <input type="text"
                                class="form-control"
+                               name="cnpj"
+                               value="{{ empresa.numero_registro }}"
                                placeholder="00.000.000/0000-00"
                                maxlength="18"
                                required>
@@ -139,6 +171,7 @@
                 </form>
 
             </div>
+
         </div>
 
     </div>
