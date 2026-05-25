@@ -256,7 +256,6 @@ def login():
                 session["usuario_id"] = usuario["id"]
                 session["usuario_nome"] = usuario["nome"]
                 session["tipo_conta"] = "usuario"
-                flash("Login realizado com sucesso!", "success")
                 return redirect(url_for("feed"))
 
             cursor.execute("SELECT id, nome_empresa, email, senha_hash FROM empresas WHERE email = %s", (email,))
@@ -266,7 +265,6 @@ def login():
                 session["usuario_id"] = empresa["id"]
                 session["usuario_nome"] = empresa["nome_empresa"]
                 session["tipo_conta"] = "empresa"
-                flash("Login realizado com sucesso!", "success")
                 return redirect(url_for("feed"))
 
             flash("Email ou senha incorretos.", "danger")
