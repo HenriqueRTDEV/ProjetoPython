@@ -2,6 +2,7 @@ import os
 import re
 import uuid
 import mysql.connector
+import random
 from mysql.connector import Error
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -397,12 +398,42 @@ def feed():
         flash("Faça login para acessar o sistema.", "warning")
         return redirect(url_for("login"))
 
+    cursos = [
+        {
+            "titulo": "Python do Zero",
+            "instituicao": "Fundação Bradesco",
+            "link": "https://www.ev.org.br",
+            "imagem": "https://picsum.photos/600/200?1"
+        },
+        {
+            "titulo": "HTML e CSS Completo",
+            "instituicao": "Curso em Vídeo",
+            "link": "https://www.cursoemvideo.com",
+            "imagem": "https://picsum.photos/600/200?2"
+        },
+        {
+            "titulo": "UX Design",
+            "instituicao": "Sebrae",
+            "link": "https://www.sebrae.com.br",
+            "imagem": "https://picsum.photos/600/200?3"
+        },
+        {
+            "titulo": "Introdução à IA",
+            "instituicao": "Google",
+            "link": "https://grow.google",
+            "imagem": "https://picsum.photos/600/200?4"
+        }
+    ]
+
+    # sorteia até 3 cursos diferentes
+    cursos_random = random.sample(cursos, k=min(3, len(cursos)))
+
     return render_template(
         "feed.html",
         nome=session.get("usuario_nome"),
-        tipo=session.get("tipo_conta")
+        tipo=session.get("tipo_conta"),
+        cursos=cursos_random
     )
-
 # PERFIL DO USUÁRIO
 # Permite editar telefone, idade e enviar PDF (currículo)
 # Nome, CPF e email não são editáveis
