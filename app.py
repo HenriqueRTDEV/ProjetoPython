@@ -4,7 +4,16 @@ import uuid
 import mysql.connector
 import random
 from mysql.connector import Error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    send_from_directory,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
@@ -12,12 +21,12 @@ from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
 app.secret_key = "troque-esta-chave-secreta"
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'senactds2026@gmail.com'      # Gmail que vai enviar
-app.config['MAIL_PASSWORD'] = 'inwedjcfgmmhlgtn'  # Senha de app do Gmail
-app.config['MAIL_DEFAULT_SENDER'] = 'senactds2026@gmail.com'
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = "senactds2026@gmail.com"  # Gmail que vai enviar
+app.config["MAIL_PASSWORD"] = "inwedjcfgmmhlgtn"  # Senha de app do Gmail
+app.config["MAIL_DEFAULT_SENDER"] = "senactds2026@gmail.com"
 
 mail = Mail(app)
 s = URLSafeTimedSerializer(app.secret_key)
@@ -30,43 +39,52 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB
 
 
-#Altere esses campos aqui para seu banco de dados.
+# Altere esses campos aqui para seu banco de dados.
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
     "password": "123456",
-    "database": "projeto_senac_db"
+    "database": "projeto_senac_db",
 }
 
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
+
 def get_connection():
     return mysql.connector.connect(**DB_CONFIG)
 
+
 def validar_email(email):
     return bool(re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email))
+
 
 def validar_telefone(telefone):
     numeros = re.sub(r"\D", "", telefone)
     return len(numeros) in (10, 11)
 
+
 def validar_cnpj(cnpj):
     numeros = re.sub(r"\D", "", cnpj)
     return len(numeros) == 14
+
 
 def validar_cpf(cpf):
     numeros = re.sub(r"\D", "", cpf)
     return len(numeros) == 11
 
+
 def somente_numeros(valor):
     return re.sub(r"\D", "", valor or "")
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.route("/")
 def index():
     return redirect(url_for("login"))
+
 
 # Cadastro de EMPRESA
 # Valida dados (email, senha, telefone, CNPJ)
@@ -115,12 +133,14 @@ def cadastro_empresa():
 
             cursor.execute(
                 "SELECT id FROM empresas WHERE email = %s OR numero_registro = %s",
-                (email, numero_registro)
+                (email, numero_registro),
             )
             empresa_existente = cursor.fetchone()
 
             if empresa_existente:
-                flash("Já existe uma empresa cadastrada com este email ou CNPJ.", "danger")
+                flash(
+                    "Já existe uma empresa cadastrada com este email ou CNPJ.", "danger"
+                )
                 return render_template("cadastro-empresa.html")
 
             cursor.execute(
@@ -128,11 +148,13 @@ def cadastro_empresa():
                 INSERT INTO empresas (nome_empresa, email, senha_hash, telefone, numero_registro)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (nome_empresa, email, senha_hash, telefone, numero_registro)
+                (nome_empresa, email, senha_hash, telefone, numero_registro),
             )
             conn.commit()
 
-            flash("Empresa cadastrada com sucesso! Faça login para continuar.", "success")
+            flash(
+                "Empresa cadastrada com sucesso! Faça login para continuar.", "success"
+            )
             return redirect(url_for("login"))
 
         except Error as e:
@@ -146,6 +168,7 @@ def cadastro_empresa():
                 conn.close()
 
     return render_template("cadastro-empresa.html")
+
 
 # Cadastro de USUÁRIO
 # Valida dados (email, senha, CPF, telefone)
@@ -198,13 +221,14 @@ def cadastro_usuario():
             cursor = conn.cursor(dictionary=True)
 
             cursor.execute(
-                "SELECT id FROM usuarios WHERE email = %s OR cpf = %s",
-                (email, cpf)
+                "SELECT id FROM usuarios WHERE email = %s OR cpf = %s", (email, cpf)
             )
             usuario_existente = cursor.fetchone()
 
             if usuario_existente:
-                flash("Já existe um usuário cadastrado com este email ou CPF.", "danger")
+                flash(
+                    "Já existe um usuário cadastrado com este email ou CPF.", "danger"
+                )
                 return render_template("cadastro-usuario.html")
 
             cursor.execute(
@@ -212,11 +236,13 @@ def cadastro_usuario():
                 INSERT INTO usuarios (nome, email, cpf, telefone, senha_hash, genero)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """,
-                (nome, email, somente_numeros(cpf), telefone, senha_hash, genero)
+                (nome, email, somente_numeros(cpf), telefone, senha_hash, genero),
             )
             conn.commit()
 
-            flash("Usuário cadastrado com sucesso! Faça login para continuar.", "success")
+            flash(
+                "Usuário cadastrado com sucesso! Faça login para continuar.", "success"
+            )
             return redirect(url_for("login"))
 
         except Error as e:
@@ -230,6 +256,7 @@ def cadastro_usuario():
                 conn.close()
 
     return render_template("cadastro-usuario.html")
+
 
 # LOGIN (usuário ou empresa)
 # Verifica credenciais e cria sessão
@@ -250,7 +277,10 @@ def login():
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
 
-            cursor.execute("SELECT id, nome, email, senha_hash FROM usuarios WHERE email = %s", (email,))
+            cursor.execute(
+                "SELECT id, nome, email, senha_hash FROM usuarios WHERE email = %s",
+                (email,),
+            )
             usuario = cursor.fetchone()
 
             if usuario and check_password_hash(usuario["senha_hash"], senha):
@@ -259,7 +289,10 @@ def login():
                 session["tipo_conta"] = "usuario"
                 return redirect(url_for("feed"))
 
-            cursor.execute("SELECT id, nome_empresa, email, senha_hash FROM empresas WHERE email = %s", (email,))
+            cursor.execute(
+                "SELECT id, nome_empresa, email, senha_hash FROM empresas WHERE email = %s",
+                (email,),
+            )
             empresa = cursor.fetchone()
 
             if empresa and check_password_hash(empresa["senha_hash"], senha):
@@ -282,6 +315,7 @@ def login():
                 conn.close()
 
     return render_template("login.html")
+
 
 @app.route("/recuperar-senha", methods=["GET", "POST"])
 def recuperar_senha():
@@ -309,15 +343,14 @@ def recuperar_senha():
                 return render_template("recuperar_senha.html")
 
             # Gera token seguro com validade de 1 hora
-            token = s.dumps(email, salt='recuperar-senha')
-            link = url_for('nova_senha', token=token, _external=True)
+            token = s.dumps(email, salt="recuperar-senha")
+            link = url_for("nova_senha", token=token, _external=True)
 
             # Envia o email
             msg = Message(
-                subject='Redefinição de Senha - Projeto SENAC',
-                recipients=[email]
+                subject="Redefinição de Senha - Projeto SENAC", recipients=[email]
             )
-            msg.body = f'''Olá!
+            msg.body = f"""Olá!
 
 Recebemos uma solicitação para redefinir a senha da sua conta.
 
@@ -328,10 +361,13 @@ Se não foi você quem solicitou, ignore este email.
 
 Atenciosamente,
 Equipe Projeto SENAC
-'''
+"""
             mail.send(msg)
 
-            flash("Email de recuperação enviado! Verifique sua caixa de entrada.", "success")
+            flash(
+                "Email de recuperação enviado! Verifique sua caixa de entrada.",
+                "success",
+            )
             return redirect(url_for("login"))
 
         except Error as e:
@@ -351,7 +387,7 @@ Equipe Projeto SENAC
 def nova_senha(token):
     # Valida o token (expira em 1 hora)
     try:
-        email = s.loads(token, salt='recuperar-senha', max_age=3600)
+        email = s.loads(token, salt="recuperar-senha", max_age=3600)
     except Exception:
         flash("Link inválido ou expirado. Solicite um novo.", "danger")
         return redirect(url_for("recuperar_senha"))
@@ -371,8 +407,12 @@ def nova_senha(token):
             conn = get_connection()
             cursor = conn.cursor()
 
-            cursor.execute("UPDATE usuarios SET senha_hash=%s WHERE email=%s", (senha_hash, email))
-            cursor.execute("UPDATE empresas SET senha_hash=%s WHERE email=%s", (senha_hash, email))
+            cursor.execute(
+                "UPDATE usuarios SET senha_hash=%s WHERE email=%s", (senha_hash, email)
+            )
+            cursor.execute(
+                "UPDATE empresas SET senha_hash=%s WHERE email=%s", (senha_hash, email)
+            )
             conn.commit()
 
             flash("Senha redefinida com sucesso!", "success")
@@ -390,6 +430,7 @@ def nova_senha(token):
 
     return render_template("nova_senha.html", token=token)
 
+
 # FEED PRINCIPAL (home do sistema)
 # Só acessa se estiver logado
 @app.route("/feed")
@@ -403,26 +444,26 @@ def feed():
             "titulo": "Python do Zero",
             "instituicao": "Fundação Bradesco",
             "link": "https://www.ev.org.br",
-            "imagem": "https://picsum.photos/600/200?1"
+            "imagem": "https://picsum.photos/600/200?1",
         },
         {
             "titulo": "HTML e CSS Completo",
             "instituicao": "Curso em Vídeo",
             "link": "https://www.cursoemvideo.com",
-            "imagem": "https://picsum.photos/600/200?2"
+            "imagem": "https://picsum.photos/600/200?2",
         },
         {
             "titulo": "UX Design",
             "instituicao": "Sebrae",
             "link": "https://www.sebrae.com.br",
-            "imagem": "https://picsum.photos/600/200?3"
+            "imagem": "https://picsum.photos/600/200?3",
         },
         {
             "titulo": "Introdução à IA",
             "instituicao": "Google",
             "link": "https://grow.google",
-            "imagem": "https://picsum.photos/600/200?4"
-        }
+            "imagem": "https://picsum.photos/600/200?4",
+        },
     ]
 
     # sorteia até 3 cursos diferentes
@@ -432,8 +473,10 @@ def feed():
         "feed.html",
         nome=session.get("usuario_nome"),
         tipo=session.get("tipo_conta"),
-        cursos=cursos_random
+        cursos=cursos_random,
     )
+
+
 # PERFIL DO USUÁRIO
 # Permite editar telefone, idade e enviar PDF (currículo)
 # Nome, CPF e email não são editáveis
@@ -456,7 +499,9 @@ def perfil():
             telefone = request.form.get("telefone", "").strip()
             idade = request.form.get("idade", "").strip()
 
-            experiencia_profissional = request.form.get("experiencia_profissional", "").strip()
+            experiencia_profissional = request.form.get(
+                "experiencia_profissional", ""
+            ).strip()
             formacao_academica = request.form.get("formacao_academica", "").strip()
             competencias = request.form.get("competencias", "").strip()
 
@@ -490,8 +535,8 @@ def perfil():
                     experiencia_profissional,
                     formacao_academica,
                     competencias,
-                    usuario_id
-                )
+                    usuario_id,
+                ),
             )
 
             conn.commit()
@@ -513,7 +558,7 @@ def perfil():
             FROM usuarios
             WHERE id = %s
             """,
-            (usuario_id,)
+            (usuario_id,),
         )
 
         usuario = cursor.fetchone()
@@ -534,6 +579,7 @@ def perfil():
 
         if conn:
             conn.close()
+
 
 # CADASTRAR NOVA VAGA (somente empresa)
 # Valida dados e salva no banco
@@ -607,8 +653,8 @@ def nova_vaga():
                     salario,
                     localizacao,
                     tipo_contrato,
-                    modalidade
-                )
+                    modalidade,
+                ),
             )
             conn.commit()
 
@@ -627,6 +673,7 @@ def nova_vaga():
         if conn:
             conn.close()
 
+
 # LISTAR VAGAS
 # Usuário: pode se candidatar
 # Empresa: pode editar suas próprias vagas
@@ -644,7 +691,8 @@ def listar_vagas():
         cursor = conn.cursor(dictionary=True)
 
         if session.get("tipo_conta") == "usuario":
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT 
                     v.id,
                     v.titulo,
@@ -665,9 +713,12 @@ def listar_vagas():
                 LEFT JOIN candidaturas c 
                     ON c.vaga_id = v.id AND c.usuario_id = %s
                 ORDER BY v.criado_em DESC
-            """, (session["usuario_id"],))
+            """,
+                (session["usuario_id"],),
+            )
         else:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT 
                     v.id,
                     v.titulo,
@@ -686,10 +737,14 @@ def listar_vagas():
                 FROM vagas v
                 INNER JOIN empresas e ON v.empresa_id = e.id
                 ORDER BY v.criado_em DESC
-            """, (session["usuario_id"],))
+            """,
+                (session["usuario_id"],),
+            )
 
         vagas = cursor.fetchall()
-        return render_template("vagas.html", vagas=vagas, tipo=session.get("tipo_conta"))
+        return render_template(
+            "vagas.html", vagas=vagas, tipo=session.get("tipo_conta")
+        )
 
     except Error as e:
         flash(f"Erro no banco de dados: {str(e)}", "danger")
@@ -700,6 +755,7 @@ def listar_vagas():
             cursor.close()
         if conn:
             conn.close()
+
 
 # CANDIDATAR-SE À VAGA (somente usuário)
 # Evita candidatura duplicada
@@ -723,20 +779,26 @@ def candidatar_vaga(vaga_id):
             flash("Vaga não encontrada.", "danger")
             return redirect(url_for("listar_vagas"))
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id FROM candidaturas
             WHERE usuario_id = %s AND vaga_id = %s
-        """, (session["usuario_id"], vaga_id))
+        """,
+            (session["usuario_id"], vaga_id),
+        )
         candidatura_existente = cursor.fetchone()
 
         if candidatura_existente:
             flash("Você já se candidatou para essa vaga.", "warning")
             return redirect(url_for("listar_vagas"))
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO candidaturas (usuario_id, vaga_id)
             VALUES (%s, %s)
-        """, (session["usuario_id"], vaga_id))
+        """,
+            (session["usuario_id"], vaga_id),
+        )
         conn.commit()
 
         flash("Candidatura realizada com sucesso!", "success")
@@ -751,6 +813,7 @@ def candidatar_vaga(vaga_id):
             cursor.close()
         if conn:
             conn.close()
+
 
 # EDITAR VAGA (somente empresa)
 # Só pode editar vagas que ela mesma criou
@@ -767,10 +830,13 @@ def editar_vaga(vaga_id):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM vagas
             WHERE id = %s AND empresa_id = %s
-        """, (vaga_id, session["usuario_id"]))
+        """,
+            (vaga_id, session["usuario_id"]),
+        )
         vaga = cursor.fetchone()
 
         if not vaga:
@@ -810,7 +876,8 @@ def editar_vaga(vaga_id):
                 flash("Selecione uma modalidade válida.", "danger")
                 return render_template("editar-vaga.html", vaga=vaga)
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE vagas
                 SET
                     titulo = %s,
@@ -821,17 +888,19 @@ def editar_vaga(vaga_id):
                     tipo_contrato = %s,
                     modalidade = %s
                 WHERE id = %s AND empresa_id = %s
-            """, (
-                titulo,
-                descricao,
-                requisitos,
-                salario,
-                localizacao,
-                tipo_contrato,
-                modalidade,
-                vaga_id,
-                session["usuario_id"]
-            ))
+            """,
+                (
+                    titulo,
+                    descricao,
+                    requisitos,
+                    salario,
+                    localizacao,
+                    tipo_contrato,
+                    modalidade,
+                    vaga_id,
+                    session["usuario_id"],
+                ),
+            )
             conn.commit()
 
             flash("Vaga atualizada com sucesso!", "success")
@@ -848,6 +917,7 @@ def editar_vaga(vaga_id):
             cursor.close()
         if conn:
             conn.close()
+
 
 # DOWNLOAD DE CURRÍCULO (PDF)
 # Protegido: só logado pode acessar
@@ -867,8 +937,10 @@ def logout():
     flash("Você saiu da conta com sucesso.", "success")
     return redirect(url_for("login"))
 
-#ROTA TELA CANDIDATURAS USUÁRIOS
-#VISUALIZAR CANDIDATURAS
+
+# ROTA TELA CANDIDATURAS USUÁRIOS
+# VISUALIZAR CANDIDATURAS
+
 
 @app.route("/empresa/candidaturas")
 def visualizar_candidaturas():
@@ -916,15 +988,12 @@ def visualizar_candidaturas():
             WHERE vagas.empresa_id = %s
 
             """,
-            (empresa_id,)
+            (empresa_id,),
         )
 
         candidaturas = cursor.fetchall()
 
-        return render_template(
-            "candidaturas.html",
-            candidaturas=candidaturas
-        )
+        return render_template("candidaturas.html", candidaturas=candidaturas)
 
     except Error as e:
         flash(f"Erro no banco de dados: {str(e)}", "danger")
@@ -936,9 +1005,10 @@ def visualizar_candidaturas():
 
         if conn:
             conn.close()
-            
-            
+
             # PERFIL DA EMPRESA
+
+
 @app.route("/perfil_empresa", methods=["GET", "POST"])
 def perfil_empresa():
 
@@ -982,7 +1052,8 @@ def perfil_empresa():
                 return redirect(url_for("perfil_empresa"))
 
             # UPDATE
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE empresas
                 SET
                     nome_empresa = %s,
@@ -990,13 +1061,9 @@ def perfil_empresa():
                     telefone = %s,
                     numero_registro = %s
                 WHERE id = %s
-            """, (
-                nome_empresa,
-                email,
-                telefone,
-                cnpj,
-                empresa_id
-            ))
+            """,
+                (nome_empresa, email, telefone, cnpj, empresa_id),
+            )
 
             conn.commit()
 
@@ -1005,7 +1072,8 @@ def perfil_empresa():
             return redirect(url_for("perfil_empresa"))
 
         # CARREGAR DADOS DA EMPRESA
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 id,
                 nome_empresa,
@@ -1014,7 +1082,9 @@ def perfil_empresa():
                 numero_registro
             FROM empresas
             WHERE id = %s
-        """, (empresa_id,))
+        """,
+            (empresa_id,),
+        )
 
         empresa = cursor.fetchone()
 
@@ -1022,10 +1092,7 @@ def perfil_empresa():
             flash("Empresa não encontrada.", "danger")
             return redirect(url_for("logout"))
 
-        return render_template(
-            "perfil_empresa.html",
-            empresa=empresa
-        )
+        return render_template("perfil_empresa.html", empresa=empresa)
 
     except Error as e:
         flash(f"Erro no banco de dados: {str(e)}", "danger")
@@ -1037,8 +1104,7 @@ def perfil_empresa():
 
         if conn:
             conn.close()
-            
-            
+
 
 if __name__ == "__main__":
     app.run(debug=True)
