@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicação de Cursos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C4A747;
+            --gold-dark: #a98d35;
+            --gold-light: #e8d48a;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f8f8;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            background-color: var(--gold);
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar-inner {
+            padding: 2.5rem 2rem;
+        }
+
+        .sidebar h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar p {
+            font-size: 0.95rem;
+            opacity: 0.85;
+        }
+
+        .sidebar .badge-category {
+            display: inline-block;
+            background: rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 3px 2px;
+        }
+
+        /* ── Search bar ── */
+        .search-wrap {
+            position: relative;
+        }
+        .search-wrap input {
+            border-radius: 30px;
+            padding-left: 42px;
+            border: 2px solid #e0e0e0;
+            transition: border-color .2s;
+        }
+        .search-wrap input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(196,167,71,.15);
+        }
+        .search-wrap .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            pointer-events: none;
+        }
+
+        /* ── Filter chips ── */
+        .filter-chip {
+            border: 2px solid var(--gold);
+            color: var(--gold-dark);
+            background: transparent;
+            border-radius: 20px;
+            padding: 4px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .18s;
+        }
+        .filter-chip:hover,
+        .filter-chip.active {
+            background: var(--gold);
+            color: #fff;
+        }
+
+        /* ── Course card ── */
+        .course-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #ececec;
+            transition: transform .18s, box-shadow .18s;
+            overflow: hidden;
+        }
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(0,0,0,.09);
+        }
+
+        .card-thumb {
+            height: 160px;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .card-body-inner {
+            padding: 1.1rem 1.2rem 1.3rem;
+        }
+
+        .badge-level {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+        .level-iniciante  { background:#e8f5e9; color:#2e7d32; }
+        .level-intermediario { background:#fff3e0; color:#e65100; }
+        .level-avancado   { background:#fce4ec; color:#c62828; }
+
+        .course-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 8px 0 4px;
+            line-height: 1.3;
+        }
+
+        .course-meta {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .course-meta span {
+            margin-right: 10px;
+        }
+
+        .rating-star {
+            color: var(--gold);
+        }
+
+        .btn-indicar {
+            background-color: var(--gold);
+            color: #1a1a1a;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 0;
+            width: 100%;
+            transition: background .18s;
+        }
+        .btn-indicar:hover {
+            background-color: var(--gold-dark);
+            color: #fff;
+        }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            position: relative;
+            padding-left: 14px;
+        }
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            bottom: 4px;
+            width: 4px;
+            background: var(--gold);
+            border-radius: 3px;
+        }
+
+        /* ── Highlighted featured card ── */
+        .featured-card {
+            background: linear-gradient(135deg, #1a1a1a 60%, #333 100%);
+            border-radius: 14px;
+            color: #fff;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .featured-card::after {
+            content: '⭐';
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 9rem;
+            opacity: 0.06;
+        }
+        .featured-card .badge-destaque {
+            background: var(--gold);
+            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Flash messages */
+        .alert { border-radius: 10px; }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                min-height: auto;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- ── Sidebar ── -->
+        <div class="col-lg-3 sidebar d-flex align-items-start">
+            <div class="sidebar-inner w-100">
+
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='images/imagemdois.png') }}"
+                         style="max-height:70px;" onerror="this.style.display='none'">
+                </div>
+
+                <h1 class="fw-bold mb-2">CURSOS</h1>
+                <p class="mb-4">Descubra os melhores cursos indicados para o seu desenvolvimento profissional.</p>
+
+                <!-- Categorias -->
+                <div class="mb-4">
+                    <p class="fw-bold mb-2" style="font-size:.85rem; text-transform:uppercase; letter-spacing:.06em;">
+                        Categorias disponíveis
+                    </p>
+                    <span class="badge-category">💻 Tecnologia</span>
+                    <span class="badge-category">📊 Gestão</span>
+                    <span class="badge-category">🎨 Design</span>
+                    <span class="badge-category">📈 Marketing</span>
+                    <span class="badge-category">🗣️ Idiomas</span>
+                    <span class="badge-category">⚙️ Engenharia</span>
+                </div>
+
+                <hr style="border-color:rgba(0,0,0,.15);">
+
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-dark btn-lg fw-semibold">
+                        ← Voltar ao Painel
+                    </a>
+                    <a href="{{ url_for('indicar_curso') }}" class="btn btn-light btn-lg fw-semibold">
+                        + Indicar Curso
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── Main content ── -->
+        <div class="col-lg-9 py-4 px-4">
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} mb-3" role="alert">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <!-- Header row -->
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="fw-bold mb-0" style="font-size:1.6rem;">Indicações de Cursos</h2>
+                    <p class="text-muted mb-0" style="font-size:.9rem;">
+                        Cursos selecionados pela equipe para impulsionar sua carreira
+                    </p>
+                </div>
+                <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">
+                    {{ cursos|length if cursos is defined else '12' }} cursos disponíveis
+                </span>
+            </div>
+
+            <!-- Search + Filters -->
+            <div class="mb-4">
+                <div class="search-wrap mb-3">
+                    <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" class="form-control form-control-lg"
+                           id="searchInput" placeholder="Buscar curso, tema ou instrutor...">
+                </div>
+
+                <div class="d-flex flex-wrap gap-2" id="filterChips">
+                    <button class="filter-chip active" data-filter="todos">Todos</button>
+                    <button class="filter-chip" data-filter="tecnologia">💻 Tecnologia</button>
+                    <button class="filter-chip" data-filter="gestao">📊 Gestão</button>
+                    <button class="filter-chip" data-filter="design">🎨 Design</button>
+                    <button class="filter-chip" data-filter="marketing">📈 Marketing</button>
+                    <button class="filter-chip" data-filter="idiomas">🗣️ Idiomas</button>
+                </div>
+            </div>
+
+            <!-- ── Curso em destaque ── -->
+            <div class="featured-card mb-4">
+                <span class="badge-destaque">✨ DESTAQUE DA SEMANA</span>
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="fw-bold mb-1" style="font-size:1.4rem;">
+                            Python para Análise de Dados
+                        </h3>
+                        <p class="mb-2" style="opacity:.8; font-size:.9rem;">
+                            Domine pandas, matplotlib e numpy do zero ao avançado. Curso mais indicado da plataforma este mês.
+                        </p>
+                        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                            <span style="font-size:.82rem; opacity:.7;">⏱ 40 horas</span>
+                            <span style="font-size:.82rem; opacity:.7;">👨‍🏫 Prof. Ricardo Alves</span>
+                            <span class="rating-star fw-bold">★★★★★ 4.9</span>
+                        </div>
+                        <a href="{{ url_for('curso_detalhe', id=1) if False else '#' }}"
+                           class="btn fw-bold px-4 py-2"
+                           style="background:var(--gold); color:#1a1a1a; border-radius:8px;">
+                            Ver curso →
+                        </a>
+                    </div>
+                    <div class="col-md-4 text-center mt-3 mt-md-0">
+                        <div style="font-size:5rem; line-height:1;">🐍</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Grade de cursos ── -->
+            <p class="section-title mb-3">Todos os Cursos</p>
+
+            <div class="row g-3" id="courseGrid">
+
+                <!-- Card 1 -->
+                <div class="col-sm-6 col-xl-4 course-item" data-category="tecnologia" data-title="html css desenvolvimento web">
+                    <div class="course-card h-100 d-flex flex-column">
+                        <div class="card-thumb">🌐</div>
+                        <div class="card-body-inner flex-grow-1 d-flex flex-column">
+                            <span class="badge-level level-iniciante">Iniciante</span>
+                            <p class="course-title">HTML & CSS — Desenvolvimento Web do Zero</p>
+                            <div class="course-meta mb-2">
+                                <span>⏱ 20h</span>
+                                <span class="rating-star">★ 4.7</span>
+                                <span>👁 1.2k</span>
+                            </div>
+                            <p style="font-size:.82rem; color:#666; flex-grow:1;">
+                                Aprenda a construir páginas modernas e responsivas com HTML5 e CSS3.
+                            </p>
+                            <button class="btn-indicar mt-auto">Acessar curso</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="col-sm-6 col-xl-4 course-item" data-category="gestao" data-title="gestão projetos scrum agile">
+                    <div class="course-card h-100 d-flex flex-column">
+                        <div class="card-thumb">📋</div>
+                        <div class="card-body-inner flex-grow-1 d-flex flex-column">
+                            <span class="badge-level level-intermediario">Intermediário</span>
+                            <p class="course-title">Gestão de Projetos com Scrum e Agile</p>
+                            <div class="course-meta mb-2">
+                                <span>⏱ 16h</span>
+                                <span class="rating-star">★ 4.8</span>
+                                <span>👁 980</span>
+                            </div>
+                            <p style="font-size:.82rem; color:#666; flex-grow:1;">
+                                Metodologias ágeis na prática para liderar equipes e projetos com eficiência.
+                            </p>
+                            <button class="btn-indicar mt-auto">Acessar curso</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="col-sm-6 col-xl-4 course-item" data-category="design" data-title="ui ux design figma interface">
+                    <div class="course-card h-100 d-flex flex-column">
+                        <div class="card-thumb">🎨</div>
+                        <div class="card-body-inner flex-grow-1 d-flex flex-column">
+                            <span class="badge-level level-iniciante">Iniciante</span>
+                            <p class="course-title">UI/UX Design com Figma</p>
+                            <div class="course-meta mb-2">
+                                <span>⏱ 24h</span>
+                                <span class="rating-star">★ 4.9</span>
+                                <span>👁 2.1k</span>
+                            </div>
+                            <p style="font-size:.82rem; color:#666; flex-grow:1;">
+                                Crie interfaces bonitas e usáveis com as melhores práticas de design.
+                            </p>
+                            <button class="btn-indicar mt-auto">Acessar curso</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="col-sm-6 col-xl-4 course-item" data-category="marketing" data-title="marketing digital redes sociais ads">
+                    <div class="course-card h-100 d-flex flex-column">
+                        <div class="card-thumb">📣</div>
+                        <div class="card-body-inner flex-grow-1 d-flex flex-column">
+                            <span class="badge-level level-intermediario">Intermediário</span>
+                            <p class="course-title">Marketing Digital e Tráfego Pago</p>
+                            <div class="course-meta mb-2">
+                                <span>⏱ 18h</span>
+                                <span class="rating-star">★ 4.6</span>
+                                <span>👁 870</span>
+                            </div>
+                            <p style="font-size:.82rem; color:#666; flex-grow:1;">
+                                Google Ads, Meta Ads e estratégias de conversão para aumentar seus resultados.
+                            </p>
+                            <button class="btn-indicar mt-auto">Acessar curso</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="col-sm-6 col-xl-4 course-item" data-category="idiomas" data-title="inglês business comunicação">
+                    <div class="course-card h-100 d-flex flex-column">
+                        <div class="card-thumb">🗣️</div>
+                        <div class="card-body-inner flex-grow-1 d-flex flex-column">
+                            <span class="badge-level level-iniciante">Iniciante</span>
+                            <p class="course-title">Inglês para Negócios</p>
+                            <div class="course-meta mb-2">
+                                <span>⏱ 30h</span>
+                                <span class="rating-star">★ 4.7</span>
+                                <span>👁 1.5k</span>
+                            </div>
+                            <p style="font-size:.82rem; color:#666; flex-grow:1;">
+                                Comunicação profissional em inglês para reuniões, e-mails e apresentações.
+                            </p>
+                            <button class="btn-indicar mt-auto">Acessar curso</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="col-sm-6 col-xl-4 course-item" data-category="tecnologia" data-title="javascript react frontend desenvolvimento">
+                    <div class="course-card h-100 d-flex flex-column">
+                        <div class="card-thumb">⚛️</div>
+                        <div class="card-body-inner flex-grow-1 d-flex flex-column">
+                            <span class="badge-level level-avancado">Avançado</span>
+                            <p class="course-title">React.js — Aplicações Modernas</p>
+                            <div class="course-meta mb-2">
+                                <span>⏱ 35h</span>
+                                <span class="rating-star">★ 4.8</span>
+                                <span>👁 3.4k</span>
+                            </div>
+                            <p style="font-size:.82rem; color:#666; flex-grow:1;">
+                                Construa SPAs robustas com React, hooks, context API e integração com APIs REST.
+                            </p>
+                            <button class="btn-indicar mt-auto">Acessar curso</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /row -->
+
+            <!-- Empty state -->
+            <div id="emptyState" class="text-center py-5" style="display:none !important;">
+                <div style="font-size:4rem;">🔍</div>
+                <p class="fw-bold mt-2">Nenhum curso encontrado</p>
+                <p class="text-muted">Tente outros termos ou remova os filtros.</p>
+                <button class="filter-chip active mt-2" onclick="resetFilters()">Limpar filtros</button>
+            </div>
+
+            <!-- Pagination -->
+            <nav class="mt-4" aria-label="Paginação de cursos">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">‹ Anterior</a>
+                    </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#" style="background:var(--gold); border-color:var(--gold); color:#1a1a1a;">1</a>
+                    </li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Próximo ›</a>
+                    </li>
+                </ul>
+            </nav>
+
+        </div><!-- /col main -->
+    </div>
+</div>
+
+<script>
+    // ── Filter chips ──
+    const chips = document.querySelectorAll('.filter-chip[data-filter]');
+    const items = document.querySelectorAll('.course-item');
+    const emptyState = document.getElementById('emptyState');
+    const searchInput = document.getElementById('searchInput');
+
+    function applyFilters() {
+        const activeFilter = document.querySelector('.filter-chip.active')?.dataset.filter || 'todos';
+        const search = searchInput.value.toLowerCase().trim();
+        let visible = 0;
+
+        items.forEach(item => {
+            const matchCat = activeFilter === 'todos' || item.dataset.category === activeFilter;
+            const matchSearch = !search || item.dataset.title.includes(search);
+            const show = matchCat && matchSearch;
+            item.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        emptyState.style.setProperty('display', visible === 0 ? 'block' : 'none', 'important');
+    }
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            applyFilters();
+        });
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+
+    function resetFilters() {
+        chips.forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-filter="todos"]').classList.add('active');
+        searchInput.value = '';
+        applyFilters();
+    }
+</script>
+</body>
+</html>
